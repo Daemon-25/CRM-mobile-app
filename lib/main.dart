@@ -12,6 +12,9 @@ import 'package:crm/admin/requests.dart';
 import 'package:crm/admin/rfp.dart';
 import 'package:crm/engineers/engineers_dashboard.dart';
 import 'package:crm/engineers/projects.dart' as engineer_projects;
+import 'package:crm/engineers/budgets.dart' as engineer_budgets;
+import 'package:crm/engineers/rfp.dart' as engineer_rfp;
+import 'package:crm/engineers/proposals.dart' as engineer_proposal;
 import 'package:crm/finances/finances_dashboard.dart';
 import 'package:crm/it/it_dashboard.dart';
 import 'package:crm/login.dart';
@@ -63,6 +66,9 @@ class MyApp extends StatelessWidget {
         //Engineer Dashboard
         '/engineer' : (context) => const EngineersDashboard(),
         '/engineerProjects' : (context) => const engineer_projects.Projects(),
+        '/engineerBudgets' : (context) => const engineer_budgets.Budgets(),
+        '/engineerRfps' : (context) => const engineer_rfp.Rfp(),
+        '/engineerProposals' : (context) => const engineer_proposal.Proposals(),
 
         '/it' : (context) => const ItDashboard(),
         '/manager' : (context) => const ManagerDashboard()

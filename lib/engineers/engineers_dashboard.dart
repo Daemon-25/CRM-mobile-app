@@ -137,6 +137,9 @@ class _EngineersDashboardState extends State<EngineersDashboard>
             myFocus(),
             calendarCard(),
             timeSheetCard(),
+            budgetsCard(),
+            rfpCard(),
+            proposalCard(),
             projectsCard(),
             const SizedBox(
               height: 5.0,
@@ -420,6 +423,111 @@ class _EngineersDashboardState extends State<EngineersDashboard>
                 children: [
                   Text(
                     "Time Sheet",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Icon(
+                    Icons.arrow_right_outlined,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  Widget budgetsCard() {
+    return Card(
+        color: const Color.fromRGBO(0, 0, 0, 0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/engineerBudgets');
+          },
+          child: Container(
+            height: 70,
+            width: MediaQuery.of(context).size.width - 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              color: const Color.fromRGBO(41, 41, 41, 1),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Budgets",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Icon(
+                    Icons.arrow_right_outlined,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  Widget rfpCard() {
+    return Card(
+        color: const Color.fromRGBO(0, 0, 0, 0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/engineerRfps');
+          },
+          child: Container(
+            height: 70,
+            width: MediaQuery.of(context).size.width - 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              color: const Color.fromRGBO(41, 41, 41, 1),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "RFPs",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Icon(
+                    Icons.arrow_right_outlined,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  Widget proposalCard() {
+    return Card(
+        color: const Color.fromRGBO(0, 0, 0, 0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, '/engineerProposals');
+          },
+          child: Container(
+            height: 70,
+            width: MediaQuery.of(context).size.width - 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              color: const Color.fromRGBO(41, 41, 41, 1),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Proposals",
                     style: TextStyle(color: Colors.white),
                   ),
                   Icon(

@@ -1,29 +1,28 @@
 import 'package:crm/admin/drawer.dart';
-import 'package:crm/dialogs/add_project_dialog.dart';
+import 'package:crm/dialogs/add_proposal_dialog.dart';
 import 'package:crm/dialogs/filter_project_dialog.dart';
-import 'package:crm/dialogs/update_project_dialog.dart';
+import 'package:crm/dialogs/update_proposal_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../services/remote_services.dart';
 
-class Projects extends StatefulWidget{
-  const Projects({Key? key}) : super(key: key);
+class Proposals extends StatefulWidget{
+  const Proposals({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ProjectsState();
+  State<StatefulWidget> createState() => _ProposalsState();
 }
 
-class _ProjectsState extends State<Projects>{
+class _ProposalsState extends State<Proposals>{
   TextEditingController searchController = TextEditingController();
   var apiClient = RemoteServices();
   bool dataLoaded = false, filtersLoaded = false;
-  final snackBar1 = SnackBar(
+  final snackBar1 = const SnackBar(
     content: Text('Something Went Wrong'),
     backgroundColor: Colors.red,
   );
-  List<Map<String, dynamic>> projects = [];
-  List<Map<String, dynamic>> employees = [];
+  List<Map<String, dynamic>> proposals = [];
   List<Map<String, dynamic>> filtered = [];
   List<Map<String, dynamic>> search = [];
   List<String> projectManager=[];
@@ -39,43 +38,52 @@ class _ProjectsState extends State<Projects>{
   }
 
   void _getData() async {
-    dynamic res = await apiClient.getAllProjects();
+    dynamic res = await apiClient.getAllProposals();
 
     if(res?["success"] == true){
-      projects.clear();
+      proposals.clear();
       search.clear();
       for(var i=0;i<res["res"].length;i++){
         var e = res["res"][i];
 
         Map<String, dynamic> mp = {};
-        mp["id"] = e["Project_Id"]==null ? "" : e["Project_Id"].toString();
-        mp["name"] = e["Project_Name"]==null ? "" : e["Project_Name"].toString();
-        mp["dateCreated"] = e["Date_Created"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Date_Created"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["dueDate"] = e["Project_Due_Date"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Project_Due_Date"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["stage"] = e["Project_Stage"]==null ? "" : e["Project_Stage"].toString();
-        mp["followupNotes"] = e["Follow_Up_Notes"]==null ? "" : e["Follow_Up_Notes"].toString();
-        print(mp["followupNotes"]);
-        mp["nextFollowup"] = e["Next_Follow_Up"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Next_Follow_Up"]).add(Duration(days: 1)).toString().substring(0, 10);
-        print(mp["nextFollowup"]);
-        mp["tentClosing"] = e["Tentative_Closing"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Tentative_Closing"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["value"] = e["Project_Value"]==null ? "" : e["Project_Value"].toString();
+        mp["id"] = e["Proposal_ID"]==null ? "" : e["Proposal_ID"].toString();
+        mp["projectName"] = e["Project_Name"]==null ? "" : e["Project_Name"].toString();
+        mp["closingDeadline"] = e["Closing_Deadline"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Closing_Deadline"]).add(Duration(days: 1)).toString().substring(0, 10);
+        mp["questionDeadline"] = e["Question_Deadline"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Question_Deadline"]).add(Duration(days: 1)).toString().substring(0, 10);
+        mp["resultDate"] = e["Result_Date"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Result_Date"]).add(Duration(days: 1)).toString().substring(0, 10);
+        mp["bidStatus"] = e["Bid_Status"]==null ? "" : e["Bid_Status"].toString();
+        mp["bidderPrice"] = e["Bidder_Price"]==null ? "" : e["Bidders"].toString();
+        mp["bidders"] = e["Bidders"]==null ? "" : e["Project_Stage"].toString();
         mp["city"] = e["City"]==null ? "" : e["City"].toString();
+        mp["cityId"] = e["CityID"]==null ? "" : e["CityID"].toString();
+        mp["contractAdminPrice"] = e["Contract_Admin_Price"]==null ? "" : e["Contract_Admin_Price"].toString();
+        mp["country"] = e["Country"]==null ? "" : e["Country"].toString();
+        mp["designPrice"] = e["Design_Price"]==null ? "" : e["Design_Price"].toString();
+        mp["managerName"] = e["Manager_Name"]==null ? "" : e["Manager_Name"].toString();
+        mp["winningBidderName"] = e["Name"]==null ? "" : e["Name"].toString();
         mp["province"] = e["Province"]==null ? "" : e["Province"].toString();
-        mp["department"] = e["Department"]==null ? "" : e["Department"].toString();
-        mp["projectManager"] = e["Project_Manager"]==null ? "" : e["Project_Manager"].toString();
-        mp["distributor"] = e["Distributor"]==null ? "" : e["Distributor"].toString();
-        mp["teamMembers"] = e["Team_Members"]==null ? "" : e["Team_Members"].toString();
+        mp["provisionalItems"] = e["Provisional_Items"]==null ? "" : e["Provisional_Items"].toString();
         mp["status"] = e["Status"]==null ? "" : e["Status"].toString();
-        mp["projectCategory"] = e["Project_Category"]==null ? "" : e["Project_Category"].toString();
-        projects.add(mp);
-        projectManager?.insert(i,name);
+        mp["totalBid"] = e["Total_Bid"]==null ? "" : e["Total_Bid"].toString();
+        mp["winningBidderId"] = e["Winning_Bidder_ID"]==null ? "" : e["Winning_Bidder_ID"].toString();
+        mp["winningPrice"] = e["Winning_Price"]==null ? "" : e["Winning_Price"].toString();
+        mp["subConsultantPrice"] = e["Sub_Consultant_Price"]==null ? "" : e["Sub_Consultant_Price"].toString();
+        mp["planTakers"] = e["Plan_Takers"]==null ? "" : e["Plan_Takers"].toString();
+        mp["projectManagerId"] = e["Project_Manager_ID"]==null ? "" : e["Project_Manager_ID"].toString();
+        mp["department"] = e["Department"]==null ? "" : e["Department"].toString();
+        mp["departmentId"] = e["Department_ID"]==null ? "" : e["Department_ID"].toString();
+        mp["team"] = e["Team"]==null ? "" : e["Team"].toString();
+        print(e["Manager_Name"]);
+        proposals.add(mp);
+        projectManager?.insert(i,mp["projectName"]);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(snackBar1);
     }
 
-    filtered.addAll(projects);
-    search.addAll(projects);
+    filtered.addAll(proposals);
+    search.addAll(proposals);
 
     setState(() {
       dataLoaded = true;
@@ -113,18 +121,18 @@ class _ProjectsState extends State<Projects>{
     }
   }
 
-
   void _onSearchChanged(String text) async {
     setState(() {
       dataLoaded = false;
     });
     search.clear();
-
+    print(text);
     if(text.isEmpty){
       search.addAll(filtered);
     }else{
       filtered.forEach((e) {
-        if(e["name"].toString().toLowerCase().startsWith(text.toLowerCase())){
+        print(e["projectName"]);
+        if(e["projectName"].toString().toLowerCase().startsWith(text.toLowerCase())){
           search.add(e);
         }
       });
@@ -142,7 +150,7 @@ class _ProjectsState extends State<Projects>{
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Center(child: Text("Projects")),
+              const Center(child: Text("Proposals")),
               GestureDetector(
                 onTap: () async {
                   showGeneralDialog(
@@ -163,10 +171,10 @@ class _ProjectsState extends State<Projects>{
                           child: child,
                         );
                       },
-                      pageBuilder: (context, animation, secondaryAnimation) => const AddProjectDialog()).then((value) {
-                     if(value! == true){
-                       _getData();
-                     }
+                      pageBuilder: (context, animation, secondaryAnimation) => const AddProposalDialog()).then((value) {
+                    if(value! == true){
+                      _getData();
+                    }
                   });
                 },
                 child: const Icon(
@@ -208,7 +216,7 @@ class _ProjectsState extends State<Projects>{
                     child: search.isEmpty
                         ? const Center(
                       child: Text(
-                        "No Projects Found",
+                        "No Proposals Found",
                         style: TextStyle(color: Colors.white),
                       ),
                     )
@@ -225,6 +233,8 @@ class _ProjectsState extends State<Projects>{
         )
     );
   }
+
+
 
   Widget searchBar() {
     return Container(
@@ -282,15 +292,16 @@ class _ProjectsState extends State<Projects>{
                   child: child,
                 );
               },
-              pageBuilder: (context, animation, secondaryAnimation) => FilterProjectDialog(cat: cat, dept: dept, prevCat: selectedCat, prevDept: selectedDept)).then((value) {
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  FilterProjectDialog(cat: cat, dept: dept, prevCat: selectedCat, prevDept: selectedDept)).then((value) {
             filtered.clear();
             Map<String, List<String>> mp = value as Map<String, List<String>>;
             selectedCat = mp["Categories"]!;
             selectedDept = mp["Departments"]!;
             if (selectedDept.isEmpty && selectedCat.isEmpty) {
-              filtered.addAll(projects);
+              filtered.addAll(proposals);
             } else {
-              projects.forEach((e) {
+              proposals.forEach((e) {
                 if (selectedCat.contains(e["projectCategory"]) || selectedDept.contains(e["department"])) {
                   filtered.add(e);
                 }
@@ -320,7 +331,7 @@ class _ProjectsState extends State<Projects>{
     return Card(
       color: const Color.fromRGBO(0, 0, 0, 0),
       child: Container(
-        height: 247,
+        height: 280,
         width: MediaQuery.of(context).size.width - 20,
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
@@ -339,7 +350,7 @@ class _ProjectsState extends State<Projects>{
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       const Text(
-                        "Project ID : ",
+                        "Proposal ID : ",
                         style: TextStyle(
                             color: Color.fromRGBO(134, 97, 255, 1),
                             fontSize: 18,
@@ -369,14 +380,12 @@ class _ProjectsState extends State<Projects>{
                                 child: child,
                               );
                             },
-                            pageBuilder: (context, animation, secondaryAnimation) => updateProjectDialog(mp: mp)
+                            pageBuilder: (context, animation, secondaryAnimation) => updateProposalDialog(mp: mp)
                         ).then((value) {
-                          if(value != null){
-                            _getData();
-                            setState(() {
-                              dataLoaded = true;
-                            });
-                          }
+                          _getData();
+                          setState(() {
+                            dataLoaded = true;
+                          });
                         })
                     ,
                     child: Icon(
@@ -398,7 +407,7 @@ class _ProjectsState extends State<Projects>{
                         fontWeight: FontWeight.bold),
                   ),
                   Flexible(child: Text(
-                    mp["name"],
+                    mp["projectName"],
                     style: const TextStyle(color: Colors.white, fontSize: 16),
                     softWrap: false,
                     overflow: TextOverflow.fade,
@@ -414,26 +423,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Date Created : ",
-                    style: TextStyle(
-                        color: Color.fromRGBO(134, 97, 255, 1),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    mp["dateCreated"],
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Due Date : ",
+                    "Closing Deadline : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -442,7 +432,7 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["dueDate"],
+                      mp["closingDeadline"],
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       softWrap: false,
                       overflow: TextOverflow.fade,
@@ -457,7 +447,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Project Stage : ",
+                    "Result Date : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -466,7 +456,31 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["stage"],
+                      mp["resultDate"],
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Status : ",
+                    style: TextStyle(
+                        color: Color.fromRGBO(134, 97, 255, 1),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      mp["status"],
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       softWrap: false,
                       overflow: TextOverflow.fade,
@@ -481,7 +495,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Tentative Closing : ",
+                    "Total Bid : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -490,7 +504,7 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["tentClosing"],
+                      mp["totalBid"],
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       softWrap: false,
                       overflow: TextOverflow.fade,
@@ -539,7 +553,7 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["projectManager"],
+                      mp["managerName"],
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       softWrap: false,
                       overflow: TextOverflow.fade,
@@ -555,7 +569,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Project Value : ",
+                    "Winning Bidder : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -564,7 +578,7 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      '\$ ' + mp["value"],
+                      mp["winningBidderName"],
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       softWrap: false,
                       overflow: TextOverflow.fade,
@@ -572,6 +586,34 @@ class _ProjectsState extends State<Projects>{
                   )
 
                 ],
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Winning Bid : ",
+                    style: TextStyle(
+                        color: Color.fromRGBO(134, 97, 255, 1),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      '\$ ' + mp["winningPrice"],
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                    ),
+                  )
+
+                ],
+              ),
+              const SizedBox(
+                height: 5,
               ),
             ],
           ),

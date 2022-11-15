@@ -1,35 +1,27 @@
-import 'package:crm/admin/drawer.dart';
-import 'package:crm/dialogs/add_project_dialog.dart';
+import 'package:crm/dialogs/add_budget_dialog.dart';
 import 'package:crm/dialogs/filter_project_dialog.dart';
-import 'package:crm/dialogs/update_project_dialog.dart';
+import 'package:crm/dialogs/update_budget_dialog.dart';
+import 'package:crm/services/remote_services.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import '../services/remote_services.dart';
-
-class Projects extends StatefulWidget{
-  const Projects({Key? key}) : super(key: key);
+class Budgets extends StatefulWidget{
+  const Budgets({super.key});
 
   @override
-  State<StatefulWidget> createState() => _ProjectsState();
+  State<StatefulWidget> createState() => _BudgetsState();
 }
 
-class _ProjectsState extends State<Projects>{
-  TextEditingController searchController = TextEditingController();
+class _BudgetsState extends State<Budgets>{
   var apiClient = RemoteServices();
+  TextEditingController searchController = TextEditingController();
   bool dataLoaded = false, filtersLoaded = false;
-  final snackBar1 = SnackBar(
+  final snackBar1 = const SnackBar(
     content: Text('Something Went Wrong'),
     backgroundColor: Colors.red,
   );
-  List<Map<String, dynamic>> projects = [];
-  List<Map<String, dynamic>> employees = [];
-  List<Map<String, dynamic>> filtered = [];
-  List<Map<String, dynamic>> search = [];
-  List<String> projectManager=[];
+
+  List<Map<String, dynamic>> budgets = [], search = [], filtered = [];
   List<String> selectedCat = [], selectedDept = [], dept = [], cat = [];
-  int price = 0;
-  String name = "";
 
   @override
   void initState() {
@@ -39,50 +31,48 @@ class _ProjectsState extends State<Projects>{
   }
 
   void _getData() async {
-    dynamic res = await apiClient.getAllProjects();
-
-    if(res?["success"] == true){
-      projects.clear();
+    try {
+      setState(() {
+        dataLoaded = false;
+      });
+      dynamic res = await apiClient.getBudgets();
+      budgets.clear();
       search.clear();
-      for(var i=0;i<res["res"].length;i++){
+      filtered.clear();
+
+      for (var i = 0; i < res["res"].length; i++) {
         var e = res["res"][i];
 
         Map<String, dynamic> mp = {};
-        mp["id"] = e["Project_Id"]==null ? "" : e["Project_Id"].toString();
-        mp["name"] = e["Project_Name"]==null ? "" : e["Project_Name"].toString();
-        mp["dateCreated"] = e["Date_Created"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Date_Created"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["dueDate"] = e["Project_Due_Date"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Project_Due_Date"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["stage"] = e["Project_Stage"]==null ? "" : e["Project_Stage"].toString();
-        mp["followupNotes"] = e["Follow_Up_Notes"]==null ? "" : e["Follow_Up_Notes"].toString();
-        print(mp["followupNotes"]);
-        mp["nextFollowup"] = e["Next_Follow_Up"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Next_Follow_Up"]).add(Duration(days: 1)).toString().substring(0, 10);
-        print(mp["nextFollowup"]);
-        mp["tentClosing"] = e["Tentative_Closing"]==null ? "" : DateFormat("yyyy-MM-dd").parse(e["Tentative_Closing"]).add(Duration(days: 1)).toString().substring(0, 10);
-        mp["value"] = e["Project_Value"]==null ? "" : e["Project_Value"].toString();
-        mp["city"] = e["City"]==null ? "" : e["City"].toString();
-        mp["province"] = e["Province"]==null ? "" : e["Province"].toString();
-        mp["department"] = e["Department"]==null ? "" : e["Department"].toString();
-        mp["projectManager"] = e["Project_Manager"]==null ? "" : e["Project_Manager"].toString();
-        mp["distributor"] = e["Distributor"]==null ? "" : e["Distributor"].toString();
-        mp["teamMembers"] = e["Team_Members"]==null ? "" : e["Team_Members"].toString();
-        mp["status"] = e["Status"]==null ? "" : e["Status"].toString();
-        mp["projectCategory"] = e["Project_Category"]==null ? "" : e["Project_Category"].toString();
-        projects.add(mp);
-        projectManager?.insert(i,name);
+
+        mp["budgetId"] = e["Budget_ID"];
+        mp["cityId"] = e["City_ID"];
+        mp["departmentId"] = e["Department_ID"];
+        mp["projectCatId"] = e["Project_Cat_ID"];
+        mp["projectName"] = e["Project_Name"] ?? "";
+        mp["budgetCategory"] = e["Budget_Category"] ?? "";
+        mp["budgetAmount"] = e["Budget_Amount"] ?? "";
+        mp["city"] = e["City"];
+        mp["province"] = e["Province"];
+        mp["country"] = e["Country"];
+        mp["department"] = e["Department"];
+        mp["projectCategory"] = e["Project_Category"];
+
+        budgets.add(mp);
+        search.add(mp);
+        filtered.add(mp);
       }
-    } else {
+
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(snackBar1);
+    } finally {
+      setState(() {
+        dataLoaded = true;
+      });
+
+      await Future.delayed(Duration(seconds: 2));
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
     }
-
-    filtered.addAll(projects);
-    search.addAll(projects);
-
-    setState(() {
-      dataLoaded = true;
-    });
-
-    await Future.delayed(Duration(seconds: 2));
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
   void _getFilters() async {
@@ -113,18 +103,20 @@ class _ProjectsState extends State<Projects>{
     }
   }
 
-
   void _onSearchChanged(String text) async {
     setState(() {
       dataLoaded = false;
     });
     search.clear();
 
-    if(text.isEmpty){
+    if (text.isEmpty) {
       search.addAll(filtered);
-    }else{
+    } else {
       filtered.forEach((e) {
-        if(e["name"].toString().toLowerCase().startsWith(text.toLowerCase())){
+        if (e["projectName"]
+            .toString()
+            .toLowerCase()
+            .contains(text.toLowerCase())) {
           search.add(e);
         }
       });
@@ -142,7 +134,7 @@ class _ProjectsState extends State<Projects>{
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Center(child: Text("Projects")),
+              const Center(child: Text("Budgets")),
               GestureDetector(
                 onTap: () async {
                   showGeneralDialog(
@@ -163,10 +155,10 @@ class _ProjectsState extends State<Projects>{
                           child: child,
                         );
                       },
-                      pageBuilder: (context, animation, secondaryAnimation) => const AddProjectDialog()).then((value) {
-                     if(value! == true){
-                       _getData();
-                     }
+                      pageBuilder: (context, animation, secondaryAnimation) => const AddBudgetDialog()).then((value) {
+                    if(value! == true){
+                      _getData();
+                    }
                   });
                 },
                 child: const Icon(
@@ -190,7 +182,6 @@ class _ProjectsState extends State<Projects>{
             padding: const EdgeInsets.symmetric(horizontal: 5.0),
             child: Column(
               children: [
-                // searchBar(),
                 Container(
                     width: MediaQuery.of(context).size.width - 10,
                     child: Row(
@@ -208,22 +199,21 @@ class _ProjectsState extends State<Projects>{
                     child: search.isEmpty
                         ? const Center(
                       child: Text(
-                        "No Projects Found",
+                        "No Budgets Found",
                         style: TextStyle(color: Colors.white),
                       ),
                     )
-                        : Expanded(child: ListView.builder(
-                      itemCount: search.length,
-                      prototypeItem: ListCard(search.first),
-                      itemBuilder: (context, index) {
-                        return ListCard(search[index]);
-                      },
-                    ),)
-                )
+                        : Expanded(
+                      child: ListView.builder(
+                        itemCount: search.length,
+                        prototypeItem: ListCard(search.first),
+                        itemBuilder: (context, index) {
+                          return ListCard(search[index]);
+                        },
+                      ),
+                    ))
               ],
-            )
-        )
-    );
+            )));
   }
 
   Widget searchBar() {
@@ -256,9 +246,6 @@ class _ProjectsState extends State<Projects>{
     );
   }
 
-
-
-
   Widget filterButton() {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -282,15 +269,18 @@ class _ProjectsState extends State<Projects>{
                   child: child,
                 );
               },
-              pageBuilder: (context, animation, secondaryAnimation) => FilterProjectDialog(cat: cat, dept: dept, prevCat: selectedCat, prevDept: selectedDept)).then((value) {
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  FilterProjectDialog(cat: cat, dept: dept, prevCat: selectedCat, prevDept: selectedDept)).then((value) {
             filtered.clear();
             Map<String, List<String>> mp = value as Map<String, List<String>>;
-            selectedCat = mp["Categories"]!;
-            selectedDept = mp["Departments"]!;
+
+            selectedCat = mp["Categories"] ?? [];
+            selectedDept = mp["Departments"] ?? [];
+
             if (selectedDept.isEmpty && selectedCat.isEmpty) {
-              filtered.addAll(projects);
+              filtered.addAll(budgets);
             } else {
-              projects.forEach((e) {
+              budgets.forEach((e) {
                 if (selectedCat.contains(e["projectCategory"]) || selectedDept.contains(e["department"])) {
                   filtered.add(e);
                 }
@@ -300,10 +290,6 @@ class _ProjectsState extends State<Projects>{
             _onSearchChanged(searchController.text);
           });
         },
-        child: Padding(
-          padding: EdgeInsets.all(10.0),
-          child: Icon(Icons.filter_alt),
-        ),
         style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(
                 const Color.fromRGBO(134, 97, 255, 1)),
@@ -311,16 +297,19 @@ class _ProjectsState extends State<Projects>{
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(40.0),
                 ))),
+        child: Padding(
+          padding: EdgeInsets.all(10.0),
+          child: Icon(Icons.filter_alt),
+        ),
       ),
     );
   }
-
 
   Widget ListCard(Map<String, dynamic> mp) {
     return Card(
       color: const Color.fromRGBO(0, 0, 0, 0),
       child: Container(
-        height: 247,
+        height: 200,
         width: MediaQuery.of(context).size.width - 20,
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
@@ -332,81 +321,56 @@ class _ProjectsState extends State<Projects>{
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Project ID : ",
-                        style: TextStyle(
-                            color: Color.fromRGBO(134, 97, 255, 1),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        mp["id"],
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () =>
-                        showGeneralDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            transitionDuration: Duration(milliseconds: 500),
-                            transitionBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.ease;
-
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: child,
-                              );
-                            },
-                            pageBuilder: (context, animation, secondaryAnimation) => updateProjectDialog(mp: mp)
-                        ).then((value) {
-                          if(value != null){
-                            _getData();
-                            setState(() {
-                              dataLoaded = true;
-                            });
-                          }
-                        })
-                    ,
-                    child: Icon(
-                      Icons.edit,
-                      color: Color.fromRGBO(134, 97, 255, 1),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Budget ID : ",
+                      style: TextStyle(
+                          color: Color.fromRGBO(134, 97, 255, 1),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
-                  )
+                    Text(
+                      mp["budgetId"].toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () =>
+                      showGeneralDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          transitionDuration: Duration(milliseconds: 500),
+                          transitionBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0);
+                            const end = Offset.zero;
+                            const curve = Curves.ease;
 
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Project Name : ",
-                    style: TextStyle(
-                        color: Color.fromRGBO(134, 97, 255, 1),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Flexible(child: Text(
-                    mp["name"],
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                    softWrap: false,
-                    overflow: TextOverflow.fade,
-                  ),
-                    fit: FlexFit.loose,)
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-                ],
-              ),
+                            return SlideTransition(
+                              position: animation.drive(tween),
+                              child: child,
+                            );
+                          },
+                          pageBuilder: (context, animation, secondaryAnimation) => UpdateBudgetDialog(mp : mp)
+                      ).then((value) {
+                        if(value != null){
+                          _getData();
+                          setState(() {
+                            dataLoaded = true;
+                          });
+                        }
+                      }),
+                  child: Icon(
+                    Icons.edit,
+                    color: Color.fromRGBO(134, 97, 255, 1),
+                  ),
+                )
+              ]),
               const SizedBox(
                 height: 5,
               ),
@@ -414,26 +378,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Date Created : ",
-                    style: TextStyle(
-                        color: Color.fromRGBO(134, 97, 255, 1),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    mp["dateCreated"],
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Due Date : ",
+                    "Design/Product : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -442,8 +387,8 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["dueDate"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      mp["budgetCategory"],
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       softWrap: false,
                       overflow: TextOverflow.fade,
                     ),
@@ -457,7 +402,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Project Stage : ",
+                    "City : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -466,39 +411,15 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["stage"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      softWrap: false,
-                      overflow: TextOverflow.fade,
-                    ),)
-
-                ],
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Tentative Closing : ",
-                    style: TextStyle(
-                        color: Color.fromRGBO(134, 97, 255, 1),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Flexible(
-                    fit: FlexFit.loose,
-                    child: Text(
-                      mp["tentClosing"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      mp["city"],
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       softWrap: false,
                       overflow: TextOverflow.fade,
                     ),
                   )
-
                 ],
-              ),const SizedBox(
+              ),
+              const SizedBox(
                 height: 5,
               ),
               Row(
@@ -515,12 +436,11 @@ class _ProjectsState extends State<Projects>{
                     fit: FlexFit.loose,
                     child: Text(
                       mp["department"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       softWrap: false,
                       overflow: TextOverflow.fade,
                     ),
                   )
-
                 ],
               ),
               const SizedBox(
@@ -530,7 +450,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Project Manager: ",
+                    "Category : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -539,13 +459,12 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      mp["projectManager"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      mp["projectCategory"],
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       softWrap: false,
                       overflow: TextOverflow.fade,
                     ),
                   )
-
                 ],
               ),
               const SizedBox(
@@ -555,7 +474,7 @@ class _ProjectsState extends State<Projects>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Text(
-                    "Project Value : ",
+                    "Project Name : ",
                     style: TextStyle(
                         color: Color.fromRGBO(134, 97, 255, 1),
                         fontSize: 18,
@@ -564,13 +483,36 @@ class _ProjectsState extends State<Projects>{
                   Flexible(
                     fit: FlexFit.loose,
                     child: Text(
-                      '\$ ' + mp["value"],
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      mp["projectName"],
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
                       softWrap: false,
                       overflow: TextOverflow.fade,
                     ),
                   )
-
+                ],
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Budget Amount : ",
+                    style: TextStyle(
+                        color: Color.fromRGBO(134, 97, 255, 1),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      "\$ ${mp["budgetAmount"]}",
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      softWrap: false,
+                      overflow: TextOverflow.fade,
+                    ),
+                  )
                 ],
               ),
             ],
